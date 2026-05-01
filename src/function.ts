@@ -21,3 +21,12 @@ const funInObj={
     },
 };
    console.log(funInObj.add(20000));
+
+
+   function discount(productPrice: number, discount:number):number{
+    let netPrice=productPrice-discount;
+    return netPrice;
+   }
+
+  let print= discount(1999,110);
+  console.log(print);
