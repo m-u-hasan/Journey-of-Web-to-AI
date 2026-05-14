@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "http";
 //import{productController} from "../controller/productController.ts"
-import { productController } from "../controller/productController.ts";
+import { productController } from "../controller/productController.js";
 
 export const routeHandler = (req: IncomingMessage, res: ServerResponse) => {
     //console.log(req.url); // "/", "/user" "/Product"

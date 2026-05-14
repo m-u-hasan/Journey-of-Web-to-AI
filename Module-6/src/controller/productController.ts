@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
+import { readProduct } from "../services/product.service";
 
 export const productController = (
   req: IncomingMessage,
@@ -9,12 +10,15 @@ export const productController = (
   const method = req.method;
 
   const products = [
-    {
-      id: 1,
-      name: "Rahim",
-    },
+    // {
+    //   id: 1,
+    //   name: "Rahim",
+    // },
   ];
 
+
+const product= readProduct();
+  
   if (url?.startsWith("/Products") && method === "GET") {
 
     res.writeHead(200, {
@@ -24,7 +28,7 @@ export const productController = (
     res.end(
       JSON.stringify({
         success: true,
-        message: "This is product route hub zone",
+        message: "Product route and retrive successfully",
         data: products,
       })
     );
