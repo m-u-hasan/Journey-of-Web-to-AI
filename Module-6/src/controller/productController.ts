@@ -1,67 +1,103 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import { readProduct } from "../services/product.service";
-import {Iproduct} from "../types/product.type";
+import { Iproduct } from "../types/product.type";
+import { parseBody } from "../utility/parseBody";
 
-//GET all products: 
-export const productController = async(
+export const productController = async (
   req: IncomingMessage,
   res: ServerResponse
 ) => {
-
   const url = req.url;
   const method = req.method;
 
-  // const products = [
-  //   // {
-  //   //   id: 1,
-  //   //   name: "Rahim",
-  //   // },
-  // ];
+  // Normalize URL (VERY IMPORTANT)
+  const normalizedUrl = url?.toLowerCase().replace(/\/$/, "");
 
-  // /product => /products/1=>['', 'product', '1']
+  // Handle favicon request
+  if (normalizedUrl === "/favicon.ico") {
+    res.writeHead(204);
+    return res.end();
+  }
 
-  //urlParts = ["", "products", "1"]
-const urlParts = url?.toLowerCase().split("/");
+  const urlParts = normalizedUrl?.split("/");
 
-const id =
-  urlParts?.[1] === "products" && urlParts[2]
-    ? Number(urlParts[2])
-    : null;
+  const id =
+    urlParts?.[1] === "products" && urlParts[2]
+      ? Number(urlParts[2])
+      : null;
 
-    console.log("This actual loading data from ",id);
+  const isValidId = id !== null && !isNaN(id);
 
-const isValidId = id !== null && !isNaN(id);
+  const products = await readProduct();
 
-const products = await readProduct();
+  // =========================
+  // GET ALL PRODUCTS
+  // =========================
+  if (method === "GET" && normalizedUrl === "/products") {
+    res.writeHead(200, {
+      "content-type": "application/json",
+    });
 
-// GET ALL PRODUCTS
-if (url === "/products" && method === "GET") {
-  res.writeHead(200, {
+    return res.end(
+      JSON.stringify({
+        success: true,
+        data: products,
+      })
+    );
+  }
+
+  // =========================
+  // GET SINGLE PRODUCT
+  // =========================
+  if (method === "GET" && isValidId) {
+    const product = products.find((p: Iproduct) => p.Id === id);
+
+    res.writeHead(200, {
+      "content-type": "application/json",
+    });
+
+    return res.end(
+      JSON.stringify({
+        success: true,
+        data: product || null,
+      })
+    );
+  }
+
+  // =========================
+  // POST PRODUCT
+  // =========================
+  if (method === "POST" && normalizedUrl === "/products") {
+    const body = await parseBody(req);
+
+    console.log("METHOD:", method);
+    console.log("URL:", normalizedUrl);
+    console.log("BODY:", body);
+
+    res.writeHead(201, {
+      "content-type": "application/json",
+    });
+
+    return res.end(
+      JSON.stringify({
+        success: true,
+        message: "Product Created Successfully",
+        data: body,
+      })
+    );
+  }
+
+  // =========================
+  // ROUTE NOT FOUND
+  // =========================
+  res.writeHead(404, {
     "content-type": "application/json",
   });
 
   return res.end(
     JSON.stringify({
-      success: true,
-      data: products,
+      success: false,
+      message: "Route Not Found",
     })
   );
-}
-
-// GET SINGLE PRODUCT
-if (method === "GET" && isValidId) {
-  const product = products.find((p: Iproduct) => p.Id === id);
-  console.log(product);
-
-  res.writeHead(200, {
-    "content-type": "application/json",
-  });
-
-  return res.end(
-    JSON.stringify({
-      success: true,
-      data: product || null,
-    })
-  );
-}
 };
