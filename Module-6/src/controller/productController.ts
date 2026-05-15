@@ -1,7 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import { readProduct } from "../services/product.service";
 
-export const productController = (
+//GET all products: 
+export const productController = async(
   req: IncomingMessage,
   res: ServerResponse
 ) => {
@@ -9,15 +10,15 @@ export const productController = (
   const url = req.url;
   const method = req.method;
 
-  const products = [
-    // {
-    //   id: 1,
-    //   name: "Rahim",
-    // },
-  ];
+  // const products = [
+  //   // {
+  //   //   id: 1,
+  //   //   name: "Rahim",
+  //   // },
+  // ];
 
 
-const product= readProduct();
+const products = await readProduct();
   
   if (url?.startsWith("/Products") && method === "GET") {
 

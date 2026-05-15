@@ -1,7 +1,14 @@
 [
     {
-        "Id":1,
+        "Id":2,
         "Name": "Product-1",
-        "Price": 10000,
+        "Price": 10000
+    },
+    
+    {
+        "Id":3,
+        "Name": "Product-1",
+        "Price": 10000
     }
+    
 ]

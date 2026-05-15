@@ -8,8 +8,6 @@ const server: Server = createServer((req: IncomingMessage, res) => {
 
 },);
 
-
-
 server.listen(5000, () => {
     console.log("Server is running at port: 50000");
 });
