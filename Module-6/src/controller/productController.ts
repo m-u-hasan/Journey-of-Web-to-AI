@@ -10,10 +10,9 @@ export const productController = async (
   const url = req.url;
   const method = req.method;
 
-  // Normalize URL (VERY IMPORTANT)
   const normalizedUrl = url?.toLowerCase().replace(/\/$/, "");
 
-  // Handle favicon request
+  // Handle favicon
   if (normalizedUrl === "/favicon.ico") {
     res.writeHead(204);
     return res.end();
@@ -28,12 +27,12 @@ export const productController = async (
 
   const isValidId = id !== null && !isNaN(id);
 
-  const products = await readProduct();
-
   // =========================
   // GET ALL PRODUCTS
   // =========================
   if (method === "GET" && normalizedUrl === "/products") {
+    const products = await readProduct();
+
     res.writeHead(200, {
       "content-type": "application/json",
     });
@@ -49,8 +48,12 @@ export const productController = async (
   // =========================
   // GET SINGLE PRODUCT
   // =========================
-  if (method === "GET" && isValidId) {
-    const product = products.find((p: Iproduct) => p.Id === id);
+  else if (method === "GET" && isValidId) {
+    const products = await readProduct();
+
+    const product = products.find(
+      (p: Iproduct) => Number(p.id) === Number(id)
+    );
 
     res.writeHead(200, {
       "content-type": "application/json",
@@ -67,24 +70,18 @@ export const productController = async (
   // =========================
   // POST PRODUCT
   // =========================
-  if (method === "POST" && normalizedUrl === "/products") {
+  else if (method === "POST" && normalizedUrl === "/products") {
     const body = await parseBody(req);
-     const products = await readProduct();
-    console.log("METHOD:", method);
-    console.log("URL:", normalizedUrl);
-    //console.log("BODY:", body);
-    const newProduct={
+
+    const newProduct = {
       id: Date.now(),
-      ...body,
+      name: body.name,
+      description: body.description || null,
+      price: Number(body.price),
     };
-    //console.log(newProduct);
-    products.push(newProduct);
-    //console.log(products);
 
-    insertProduct(products)
-
-
-
+    // ONLY SERVICE handles DB
+    insertProduct(newProduct);
 
     res.writeHead(201, {
       "content-type": "application/json",
@@ -94,7 +91,54 @@ export const productController = async (
       JSON.stringify({
         success: true,
         message: "Product Created Successfully",
-        data: products,
+        data: newProduct,
+      })
+    );
+  }
+
+  // =========================
+  // PUT PRODUCT
+  // =========================
+  else if (method === "PUT" && isValidId) {
+    const body = await parseBody(req);
+    const products = await readProduct();
+
+    const index = products.findIndex(
+      (p: Iproduct) => Number(p.id) === Number(id)
+    );
+
+    if (index === -1) {
+      res.writeHead(404, {
+        "content-type": "application/json",
+      });
+
+      return res.end(
+        JSON.stringify({
+          success: false,
+          message: "Product not found",
+        })
+      );
+    }
+
+    products[index] = {
+      ...products[index],
+      ...body,
+    };
+
+    
+
+    const { insertProduct: save } = await import("../services/product.service");
+    save(products);
+
+    res.writeHead(200, {
+      "content-type": "application/json",
+    });
+
+    return res.end(
+      JSON.stringify({
+        success: true,
+        message: "Product updated successfully",
+        data: products[index],
       })
     );
   }

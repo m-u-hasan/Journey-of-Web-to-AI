@@ -1,32 +1,16 @@
 [
+  {
+    "id": 1778939395726,
+    "name": "test product",
+    "description": null,
+    "price": 100
+  },
+  [
     {
-        "Id": 1,
-        "Name": "iPhone 15 Pro",
-        "Description": "Apple flagship smartphone with A17 Pro chip and titanium body.",
-        "Price": 135000
-    },
-    {
-        "Id": 2,
-        "Name": "Samsung Galaxy S24",
-        "Description": "Premium Android smartphone with powerful AI features and AMOLED display.",
-        "Price": 110000
-    },
-    {
-        "Id": 3,
-        "Name": "Sony WH-1000XM5",
-        "Description": "Wireless noise-cancelling headphones with high-quality sound.",
-        "Price": 45000
-    },
-    {
-        "id": 1778930948717,
-        "name": "Product Test-newproducts-stringify",
-        "Description": "kdjsfkdsfjdsk",
-        "Price": 1000
-    },
-    {
-        "id": 1778931000236,
-        "name": "Product Test-newproducts-Final",
-        "Description": "kdjsfkdsfjdsk",
-        "Price": 9999
+      "id": 1778939395726,
+      "name": "test product Final",
+      "description": null,
+      "price": 99
     }
+  ]
 ]
