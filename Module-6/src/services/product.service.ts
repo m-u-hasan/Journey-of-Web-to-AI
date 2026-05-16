@@ -15,7 +15,12 @@ export const readProduct = () => {
   }
 };
 
-
+export const saveProducts = (products: any) => {
+  fs.writeFileSync(
+    filePath,
+    JSON.stringify(products, null, 2)
+  );
+};
 
 
 

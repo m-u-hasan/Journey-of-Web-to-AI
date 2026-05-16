@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "http";
-import { insertProduct, readProduct } from "../services/product.service";
+import { insertProduct, readProduct, saveProducts } from "../services/product.service";
 import { Iproduct } from "../types/product.type";
 import { parseBody } from "../utility/parseBody";
 
@@ -105,7 +105,7 @@ export const productController = async (
 
     const index = products.findIndex(
       (p: Iproduct) => Number(p.id) === Number(id)
-    );
+    )
 
     if (index === -1) {
       res.writeHead(404, {
@@ -142,6 +142,48 @@ export const productController = async (
       })
     );
   }
+//====================
+//Product DELETE
+//=====================
+ if (method === "DELETE" && id !== null) {
+
+  const products = readProduct();
+
+  const index = products.findIndex(
+    (p: Iproduct) => Number(p.id) === Number(id)
+  );
+
+  // product not found
+  if (index === -1) {
+    res.writeHead(404, {
+      "content-type": "application/json",
+    });
+
+    return res.end(
+      JSON.stringify({
+        success: false,
+        message: "Product not found",
+      })
+    );
+  }
+
+  // delete product
+  products.splice(index, 1);
+
+  // save updated array
+  saveProducts(products);
+
+  res.writeHead(200, {
+    "content-type": "application/json",
+  });
+
+  return res.end(
+    JSON.stringify({
+      success: true,
+      message: "Product Deleted Successfully",
+    })
+  );
+}
 
   // =========================
   // ROUTE NOT FOUND
