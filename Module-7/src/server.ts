@@ -1,16 +1,34 @@
-import express from "express"
+import express, {type Application, type Request, type Response} from "express";
 //const express = require('express')
-const app = express()
-const port = 3000
+const app : Application = express();
+const port = 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello World! This is express Server')
+app.use(express.json());// Middle Ware
+
+
+app.get('/', (req : Request, res:Response) => {
+  res.send('Hello World! This is express Server');
 })
 
-app.get('/User', (req, res) => {
-  res.send('This is user route')
+app.get('/User', (req: Request , res: Response) => {
+ // res.send('This is user route');
+  res.status(200).json({
+    "message" : "Express Server",
+    "author": "Next",
+  })
+
+})
+
+app.post('/', async(req: Request, res: Response)=>
+{
+    console.log(req.body);
+
+    res.status(201).json({
+        "success": true,
+        data: req.body,
+    })
 })
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`Example app listening on port ${port}`);
 })
