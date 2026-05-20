@@ -25,6 +25,19 @@ app.get('/User', (req: Request , res: Response) => {
 
 });
 
+//=================Data Type of SQL===============
+        //boolean
+        //Numbers
+        //Binary
+        //Date/time
+        //Json
+        //Character
+        //UUID
+        //Array
+        //XML
+//=================Data Type of SQL==============
+
+
 app.post('/', async(req: Request, res: Response)=>
 {
     //console.log(req.body);
