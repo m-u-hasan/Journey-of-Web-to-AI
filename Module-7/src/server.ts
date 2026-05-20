@@ -1,4 +1,5 @@
 import express, {type Application, type Request, type Response} from "express";
+import { timeStamp } from "node:console";
 import{Pool} from "pg";
 //const express = require('express')
 const app : Application = express();
@@ -36,6 +37,30 @@ app.get('/User', (req: Request , res: Response) => {
         //Array
         //XML
 //=================Data Type of SQL==============
+
+
+const initDB=async()=>{
+  try{
+    await pool.query(`
+        CREATED TABLE IF NOT EXIST users (
+          id SERIAL PRIMARY KeyboardEvent,
+          name VARCHAR(20),
+          email VARCHAR(20) NOT NULL,
+          password VARCHAR(20) NOT null,
+          age int,
+          is_active BOOLEAN DEFAULT true,
+          
+          created_at TIMESTAMP DEFAULT New(),
+          updated_at TIMESTAMP DEFAULT now()
+      )
+      `)
+      console.log("Database Connected");
+  }catch (error)
+  {
+    console.log(error);
+  }
+};
+initDB();
 
 
 app.post('/', async(req: Request, res: Response)=>
