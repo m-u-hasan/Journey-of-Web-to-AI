@@ -1,21 +1,16 @@
 import express, { type Application, type Request, type Response } from "express";
 import { Pool, Result } from "pg";
-import dotenv from "dotenv";
 import { error } from "node:console";
+import config from "./config";
 
-dotenv.config();
 
-const app: Application = express()
-
-const port = process.env.PORT || 3000;
+const app: Application = express();
+const port =config.port;
 
 app.use(express.json());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  connectionString: config.connecion_string,
 });
 
 app.get("/", (req: Request, res: Response) => {
