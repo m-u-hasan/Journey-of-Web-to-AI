@@ -106,7 +106,34 @@ app.get("/api/users", async (req: Request, res: Response) => {
 });
 
 
+//======================Retrive Single user with params================
+app.get("/api/users/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(`
+  SELECT *from users where id=$1
+  `, [id])
 
+    if (result.rows.length === 0) {
+      res.status(200).json({
+        success: true,
+        message: "User Not found in DB",
+        data: []
+      })
+    }
+    res.status(200).json({
+      success: true,
+      message: "Single User Retrive successfully",
+      data: result.rows[0]
+    })
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "User not found",
+      data: error
+    });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
