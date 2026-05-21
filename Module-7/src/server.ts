@@ -118,7 +118,7 @@ app.get("/api/users/:id", async (req: Request, res: Response) => {
     if (result.rows.length === 0) {
       res.status(404).json({
         success: true,
-        message: "User Not found in",
+        message: "User Not found in DB",
         data: []
       })
     }
@@ -182,9 +182,38 @@ app.put("/api/users/:id", async (req: Request, res: Response) => {
 
 });
 
+//=============User Delte from DB=============
+app.delete("/api/users/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(`
+      DELETE FROM users where id=$1
+      `, [id],
+    );
+        // If user not exist in DB, so that we check early
+    if (result.rowCount === 0) {
+      res.status(500).json({
+        status: true,
+        message: "User Not Found"
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User Delted successfully",
+      data: {}
+    })
+  } catch (error: any) {
+    res.status(500).json({
+      success: true,
+      message: error.message
+    })
+  }
+});
+
 
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Your listening on port ${port}`);
 });
 
