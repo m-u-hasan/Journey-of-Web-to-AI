@@ -140,38 +140,44 @@ app.get("/api/users/:id", async (req: Request, res: Response) => {
 //===============Update user table===============
 app.put("/api/users/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, password, age} = req.body;
+  const { name, password, age } = req.body;
   // console.log("Id: ", id);
   // console.log(name, password, age);
-try{
+  try {
     const result = await pool.query(`
-    UPDATE users SET name=$1, password=$2, age=$3
-    WHERE id=$4 RETURNING *
-    `, [name, password, age,id]);
+    UPDATE users
+    SET
+    name=COALESCE($1, name), 
+    password=COALESCE($2, password),
+    age=COALESCE($3, age)
+    WHERE id=$4 
+    RETURNING *
+    `, [name, password, age, id]);
+    //COALESCE ( , ) use for update separately, not effect another
 
 
     //=====if user not exist, so that updt will not completed========
-    if (result.rows.length===0){
+    if (result.rows.length === 0) {
       res.status(404).json({
-         success: false,
-      message: "User not Exist"
+        success: false,
+        message: "User not Exist"
       })
     }
 
-  res.status(200).json({
-    success: true,
-    message: "User update Successfully",
-    data: result.rows[0]
+    res.status(200).json({
+      success: true,
+      message: "User update Successfully",
+      data: result.rows[0]
 
-  })
-}catch(error:any){
+    })
+  } catch (error: any) {
 
-  res.status(500).json({
-    success: false,
-    message: error.message,
-    error:error
-  })
-}
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: error
+    })
+  }
 
 
 });
