@@ -1,5 +1,5 @@
 import express, { type Application, type Request, type Response } from "express";
-import { Pool } from "pg";
+import { Pool, Result } from "pg";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -22,7 +22,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 
-//=================Created Table===================
+//=================Created a Table===================
+
 const initDB = async () => {
   try {
     await pool.query(`
@@ -47,8 +48,7 @@ const initDB = async () => {
 
 initDB();
 
-app.get('/', (req: Request,res:Response)=>
-{
+app.get('/', (req: Request, res: Response) => {
   res.status(201).json(
     {
       message: "Express Server",
@@ -58,31 +58,55 @@ app.get('/', (req: Request,res:Response)=>
 });
 
 
-//==============Insert Data in USER table=================
-app.post('/', async(req:Request, res:Response)=>
-{
-const {name, email, password, age}=req.body;
-try{
-const result = await pool.query(`
+//==============Insert Data in users Table=================
+app.post("/api/users", async (req: Request, res: Response) => {
+  const { name, email, password, age } = req.body;
+  try {
+    const result = await pool.query(`
   INSERT INTO users(name, email, password, age) VALUES($1,$2,$3,$4)
   RETURNING *`, [name, email, password, age]);
-  console.log(result);
+    console.log(result);
 
-  res.status(201).json(
-    {
-      message: "User create Successfully",
-      data:result.rows[0],
-    }
-  )
-}catch (error:any) {
- res.status(500).json(
-    {
-      message: error.message,
-      error: error,
-    }
-  )
-}
+    res.status(201).json(
+      {
+        success: true,
+        message: "User create Successfully",
+        data: result.rows[0],
+      }
+    );
+  } catch (error: any) {
+    res.status(500).json(
+      {
+        message: error.message,
+        error: error,
+      }
+    )
+  }
 });
+
+//================Retrive All User of DB============= 
+
+app.get("/api/users", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`
+      SELECt *from users
+      `);
+    res.status(200).json({
+      success: true,
+      message: "All User Retrive successfully",
+      data: result.rows
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "User cant't get",
+      data: error
+    });
+  }
+});
+
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
