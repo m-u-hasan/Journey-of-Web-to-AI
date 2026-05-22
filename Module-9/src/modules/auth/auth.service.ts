@@ -13,35 +13,34 @@ const loginUserIntoDB = async (payload: { email: string, password: string }) => 
         SELECT * FROM users WHERE email=$1
         `, [email]);
 
-//Check if the user exists/user not exist
-if(userData.rows.length===0)
-{
-    throw new Error ("Invalid Crdential)")
-}
+    //Check if the user exists/user not exist
+    if (userData.rows.length === 0) {
+        throw new Error("Invalid Crdential)")
+    }
     const user = userData.rows[0];
     //console.log(user);
 
-//2. compare the password in login time
-    const matchPassword= await bcrypt.compareSync(password,user.password);
+    //2. compare the password in login time
+    const matchPassword = await bcrypt.compareSync(password, user.password);
     //console.log(matchPassword);
-    if(!matchPassword){
+    if (!matchPassword) {
         throw new Error("Invalid Password");
     }
 
-//Generate Token
+    //Generate Token
 
-const jwtPayload={
-    id: user.id,
-    name: user.name,
-    is_active:user.is_active,
-    email: user.email,
+    const jwtPayload = {
+        id: user.id,
+        name: user.name,
+        is_active: user.is_active,
+        email: user.email,
 
-}
-const accessToken =jwt.sign(jwtPayload, config.secret as string, {
-    expiresIn: "1d",
-  
-});
-  return {accessToken};
+    }
+    const accessToken = jwt.sign(jwtPayload, config.secret as string, {
+        expiresIn: "1d",
+
+    });
+    return { accessToken };
 
 
 

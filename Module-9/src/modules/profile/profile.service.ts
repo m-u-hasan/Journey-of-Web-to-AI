@@ -1,22 +1,21 @@
 import { pool } from "../../db";
 
-const createProfileIntoDB=async(payload: any)=>{
+const createProfileIntoDB = async (payload: any) => {
     //for check routing work correctly
-//console.log(payload);
-const {user_id, bio, address, phone, gender}=payload;
+    //console.log(payload);
+    const { user_id, bio, address, phone, gender } = payload;
 
-const user =await pool.query(`
+    const user = await pool.query(`
         SELECT * FROM users WHERE id=$1
     
     `, [user_id]);
-   //console.log(user_id);
+    //console.log(user_id);
 
-   if (user.rows.length===0)
-   {
-    throw new Error("User dosen't Exist in your DB!");
-   }
+    if (user.rows.length === 0) {
+        throw new Error("User dosen't Exist in your DB!");
+    }
 
-   const result =await pool.query(`
+    const result = await pool.query(`
     INSERT INTO profiles(user_id, bio, address, phone, gender) VALUES($1, $2, $3, $4, $5) RETURNING *
     `, [user_id, bio, address, phone, gender],);
 
@@ -28,6 +27,6 @@ const user =await pool.query(`
 
 
 
-export const profileService={
+export const profileService = {
     createProfileIntoDB
 }

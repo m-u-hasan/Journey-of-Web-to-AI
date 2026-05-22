@@ -6,11 +6,11 @@ import auth from "../../middleware/auth";
 
 const router = Router();
 //==============CRUD Operation=================
-router.post("/",userController.createUser);
+router.post("/", userController.createUser);
 
-router.get("/", auth(), userController.getAllUsers ); //====use of auth midelware====
+router.get("/", auth(), userController.getAllUsers); //====use of auth midelware====
 
-router.get("/:id", userController.getSingleUser );
+router.get("/:id", userController.getSingleUser);
 
 router.put("/:id", userController.updateUser);
 

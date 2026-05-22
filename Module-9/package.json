@@ -16,6 +16,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.0",
     "@types/pg": "^8.20.0",
+    "prettier": "^3.8.3",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3"
   },
