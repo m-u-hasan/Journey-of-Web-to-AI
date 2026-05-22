@@ -27,7 +27,7 @@ const loginUserIntoDB = async (payload: { email: string, password: string }) => 
         throw new Error("Invalid Password");
     }
 
-    //Generate Token
+    //=======Generate Token===========
 
     const jwtPayload = {
         id: user.id,
