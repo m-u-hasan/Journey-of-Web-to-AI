@@ -28,6 +28,20 @@ if(userData.rows.length===0)
         throw new Error("Invalid Password");
     }
 
+//Generate Token
+
+const jwtPayload={
+    id: user.id,
+    name: user.name,
+    is_active:user.is_active,
+    email: user.email,
+
+}
+const accessToken =jwt.sign(jwtPayload, config.secret as string, {
+    expiresIn: "1d",
+  
+});
+  return {accessToken};
 
 
 
