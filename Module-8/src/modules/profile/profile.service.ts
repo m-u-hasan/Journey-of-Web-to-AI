@@ -1,7 +1,7 @@
 import { pool } from "../../db";
 
 const createProfileIntoDB=async(payload: any)=>{
-    //for check routing wwork correctly
+    //for check routing work correctly
 //console.log(payload);
 const {user_id, bio, address, phone, gender}=payload;
 

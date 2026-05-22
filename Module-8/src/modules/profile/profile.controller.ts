@@ -1,10 +1,10 @@
 import type { Request, Response } from "express"
 import { profileService } from "./profile.service"
 
-const createProfile =async(req: Request, res: Response)=>{
-    try{
+const createProfile = async (req: Request, res: Response) => {
+    try {
 
-        const result=await profileService.createProfileIntoDB(req.body);
+        const result = await profileService.createProfileIntoDB(req.body);
 
         res.status(201).json({
             success: true,
@@ -12,11 +12,11 @@ const createProfile =async(req: Request, res: Response)=>{
             data: result.rows[0],
         })
 
-    }catch(error:any){
+    } catch (error: any) {
         res.status(500).json({
             success: false,
             message: error.message,
-            error:error,
+            error: error,
         })
     }
 
@@ -24,6 +24,6 @@ const createProfile =async(req: Request, res: Response)=>{
 }
 
 
-export const profileController={
+export const profileController = {
     createProfile
 }
