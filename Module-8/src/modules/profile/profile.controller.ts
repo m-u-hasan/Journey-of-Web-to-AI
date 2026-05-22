@@ -6,6 +6,12 @@ const createProfile =async(req: Request, res: Response)=>{
 
         const result=await profileService.createProfileIntoDB(req.body);
 
+        res.status(201).json({
+            success: true,
+            message: "Profile Created Successfully",
+            data: result.rows[0],
+        })
+
     }catch(error:any){
         res.status(500).json({
             success: false,
