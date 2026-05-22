@@ -24,7 +24,7 @@ export const initDB = async () => {
     `);
 
 
-    //========Create Users profiles and refn to Users=======
+    //========Create Users profiles and refn with Users=======
     await pool.query(`
       CREATE TABLE IF NOT EXISTS profiles (
       id SERIAL PRIMARY KEY,
