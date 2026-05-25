@@ -5,8 +5,8 @@ dotenv.config({quiet:true})
 
 const config={
    // port: process.env.PORT
-   port: env.PORT,
-   database_url: env.DATABASE_URL
+   port: env.PORT as string,
+   database_url: env.DATABASE_URL as string
 
 }
 
