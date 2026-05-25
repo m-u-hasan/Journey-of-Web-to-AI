@@ -1,26 +1,26 @@
-export const role=["user", "admin", "super_admin"] as const
+export const role = ["user", "admin", "super_admin"] as const
 
-type Role= typeof role[number]
-export type User={
+type Role = typeof role[number]
+export type User = {
     id: number,
     name: string,
     email: string,
-    passwordHash: string,
+    password_hash: string,
     age: number,
     role: Role,
-    createdAt: Date,
-    updatedAt: Date
+    created_at: Date,
+    updated_at: Date
 }
 
-export type Ruser= Omit<User, "id" | "passwordHash" | "createdAt" | "updatedAt">
+export type Ruser = Omit<User, "id" | "password_hash" | "created_at" | "updated_at">
 
 
-export type Order={
+export type Order = {
     id: number,
-    customerId: number,
+    customer_id: number,
     quantity: number,
     food: string,
     price: number,
-    createdAt: Date,
-    updatedAt: Date
+    created_at: Date,
+    updated_at: Date
 }

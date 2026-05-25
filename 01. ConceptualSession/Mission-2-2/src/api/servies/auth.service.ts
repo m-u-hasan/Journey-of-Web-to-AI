@@ -9,7 +9,7 @@ class AuthService {
         const hash = await bcrypt.hash(password, 10)
 
         const res = await sql`
-        INSERT INTO users(name, email, passwordHash, age, role)
+        INSERT INTO users(name, email, password_hash, age, role)
         VALUES (${name}, ${email}, ${hash}, ${age}, COALESCE(${role},'user' ))
         RETURNING id, name, age, role
         `
@@ -18,13 +18,13 @@ class AuthService {
 
     async validateUser(email: string, password: string) {
         const res = await sql`
-        SELECT *FROM users WHERE email=${email}
+        SELECT id, name, email, password_hash, age, role FROM users WHERE email=${email}
         `
         if (!res.length) {
             return null;
         }
-        const { passwordHash, ...user } = res[0] as User;
-        const isValid = await bcrypt.compare(password, passwordHash);
+        const { password_hash, ...user } = res[0] as User;
+        const isValid = await bcrypt.compare(password, password_hash);
         return isValid ? user : null
     }
 

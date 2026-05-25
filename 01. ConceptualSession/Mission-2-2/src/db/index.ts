@@ -10,11 +10,11 @@ export const initDB = async () => {
             id SERIAL PRIMARY KEY,
             name VARCHAR(50) NOT NULL,
             email VARCHAR (255) UNIQUE NOT NULL,
-            passwordHash TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
             age INT NOT NULL,
             role VARCHAR(20) NOT NULL default 'user',
-            createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
-            updatedAt TIMESTAMP NOT NULL DEFAULT NOW()
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         )
         `
 
@@ -22,12 +22,12 @@ export const initDB = async () => {
         --Orders DB schema
              CREATE TABLE IF NOT EXISTS orders(
             id SERIAL PRIMARY KEY,
-            customerID INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            customer_iD INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
             quantity INT NOT NULL CHECK (quantity>0),
             food text NOT NULL,
             price NUMERIC(10,2) NOT NULL,
-            createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
-            updatedAt TIMESTAMP NOT NULL DEFAULT NOW()
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
         )
         `
 

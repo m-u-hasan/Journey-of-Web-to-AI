@@ -7,6 +7,7 @@ const app: Application = express();
 
 app.use(logger)
 app.use(express.json())
+
 app.get("/", (req: Request, res: Response) => {
     throw new Error("Server is dying")
 })
