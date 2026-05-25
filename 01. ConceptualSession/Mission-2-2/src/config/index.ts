@@ -1,13 +1,13 @@
 import dotenv from "dotenv"
 import { env } from "process"
 
-dotenv.config({quiet:true})
+dotenv.config({ quiet: true })
 
-const config={
-   // port: process.env.PORT
-   port: env.PORT as string,
-   database_url: env.DATABASE_URL as string
-
+const config = {
+    // port: process.env.PORT
+    port: env.PORT as string,
+    database_url: env.DATABASE_URL as string,
+    node_env: env.Node_env as string
 }
 
 export default config
