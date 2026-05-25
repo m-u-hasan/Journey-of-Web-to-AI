@@ -13,8 +13,8 @@ export const initDB = async () => {
             passwordHash TEXT NOT NULL,
             age INT NOT NULL,
             role VARCHAR(20) NOT NULL default 'user',
-            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+            createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+            updatedAt TIMESTAMP NOT NULL DEFAULT NOW()
         )
         `
 
@@ -26,9 +26,8 @@ export const initDB = async () => {
             quantity INT NOT NULL CHECK (quantity>0),
             food text NOT NULL,
             price NUMERIC(10,2) NOT NULL,
-            role VARCHAR(20) NOT NULL default 'user',
-            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+            createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+            updatedAt TIMESTAMP NOT NULL DEFAULT NOW()
         )
         `
 
