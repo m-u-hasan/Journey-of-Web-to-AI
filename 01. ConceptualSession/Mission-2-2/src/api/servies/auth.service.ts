@@ -2,7 +2,6 @@ import { sql } from "../../db";
 import type { Ruser, User } from "../../types/type";
 import bcrypt from "bcrypt"
 
-
 class AuthService {
     async createUser(user: Ruser & { password: string }) {
         const { name, email, age, role, password } = user
@@ -17,7 +16,17 @@ class AuthService {
         return res[0]
     }
 
-
+    async validateUser(email: string, password: string) {
+        const res = await sql`
+        SELECT *FROM users WHERE email=${email}
+        `
+        if (!res.length) {
+            return null;
+        }
+        const { passwordHash, ...user } = res[0] as User;
+        const isValid = await bcrypt.compare(password, passwordHash);
+        return isValid ? user : null
+    }
 
 }
 export default new AuthService()
