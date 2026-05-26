@@ -1,0 +1,452 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+package.json
+src/api/controllers/auth.controller.ts
+src/api/routes/auth.routes.ts
+src/api/servies/auth.service.ts
+src/app.ts
+src/config/index.ts
+src/db/index.ts
+src/index.ts
+src/middleware/globalErrorHandler.ts
+src/middleware/logger.ts
+src/types/type.ts
+src/utils/jwt.ts
+src/utils/sendResponse.ts
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="package.json">
+{
+  "name": "mission-2-2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.9.1",
+    "tsx": "^4.22.3"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  }
+}
+</file>
+
+<file path="src/api/controllers/auth.controller.ts">
+import type { Request, Response } from "express";
+import authService from "../servies/auth.service";
+import { sendResponse } from "../../utils/sendResponse";
+import { signToken, verifyToken } from "../../utils/jwt";
+
+
+export const signup = async (req: Request, res: Response) => {
+
+    const user = await authService.createUser(req.body);
+    if (!user) {
+        sendResponse(res, { message: "Failed to create User" }, 400)
+        return
+    }
+    sendResponse(res, { message: "User created successfully", data: user }, 201)
+};
+
+export const login = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    const user = await authService.validateUser(email, password);
+
+    if (!user) {
+        sendResponse(res, { message: "Invalid email or password" }, 401)
+        return
+    }
+
+    const { accessToken, refreshToken } = signToken(user);
+
+    res.cookie("refreshToken", refreshToken, {
+        sameSite: "lax",
+        httpOnly: true,
+        secure: false
+    })
+    const result = {
+        user: user,
+        accessToken,
+        refreshToken
+    }
+    return sendResponse(res, { message: "User Login Successfull", data: result })
+};
+
+
+export const refresh = (req: Request, res: Response) => {
+    //refresh token=> validate=> user info
+    const refreshToken = req.cookies?.refreshToken
+    if (!refreshToken) {
+        return sendResponse(res, { message: "Refresh token not found" }, 401)
+    }
+
+    const payload = verifyToken(refreshToken, "refresh");
+    if (!payload) {
+        return sendResponse(res, { message: "Invalid Token" }, 401)
+    }
+
+    console.log(payload);
+
+}
+</file>
+
+<file path="src/api/routes/auth.routes.ts">
+import {Router} from "express"
+import { login, refresh, signup } from "../controllers/auth.controller"
+
+
+const router =Router()
+
+router.post ("/signup", signup)
+router.post ("/login", login)
+
+router.get("/refresh", refresh)
+
+router.get ("/me", ()=>{})
+
+router.put ("/update/:id", ()=>{})
+router.delete ("/delete/:id", ()=>{})
+
+export default router
+</file>
+
+<file path="src/api/servies/auth.service.ts">
+import { sql } from "../../db";
+import type { Ruser, User } from "../../types/type";
+import bcrypt from "bcrypt"
+import cookieParser from "cookie-parser"
+
+class AuthService {
+    async createUser(user: Ruser & { password: string }) {
+        const { name, email, age, role, password } = user
+
+        const hash = await bcrypt.hash(password, 10)
+
+        const res = await sql`
+        INSERT INTO users(name, email, password_hash, age, role)
+        VALUES (${name}, ${email}, ${hash}, ${age}, COALESCE(${role},'user' ))
+        RETURNING id, name, age, role
+        `
+        return res[0]
+    }
+
+    async validateUser(email: string, password: string) {
+        const res = await sql`
+        SELECT id, name, email, password_hash, age, role FROM users WHERE email=${email}
+        `
+        if (!res.length) {
+            return null;
+        }
+        const { password_hash, ...user } = res[0] as User;
+        const isValid = await bcrypt.compare(password, password_hash);
+        return isValid ? user : null
+    }
+
+}
+export default new AuthService()
+</file>
+
+<file path="src/app.ts">
+import express, { type Application, type Request, type Response } from "express"
+import { logger } from "./middleware/logger";
+import { globalErrorHandler } from "./middleware/globalErrorHandler";
+import authRoutes from "./api/routes/auth.routes"
+import cookieParser from "cookie-parser";
+
+const app: Application = express();
+
+app.use(logger)
+app.use(express.json())
+app.use(cookieParser())
+app.get("/", (req: Request, res: Response) => {
+    throw new Error("Server is dying")
+})
+
+
+app.use("/auth", authRoutes)
+app.use(globalErrorHandler)
+export default app
+</file>
+
+<file path="src/config/index.ts">
+import dotenv from "dotenv"
+import { env } from "process"
+
+dotenv.config({ quiet: true })
+
+const config = {
+    // port: process.env.PORT
+    port: env.PORT as string,
+    database_url: env.DATABASE_URL as string,
+    node_env: env.NODE_ENV,
+    jwt_secrete: env.JWT_SECRETE as string,
+    refresh_secrete: env.REFRESH_SECRETE as string
+}
+
+
+export default config
+</file>
+
+<file path="src/db/index.ts">
+import { neon } from "@neondatabase/serverless";
+import config from "../config";
+
+export const sql = neon(config.database_url)
+
+export const initDB = async () => {
+    await sql`
+    --Design of users DB schema
+        CREATE TABLE IF NOT EXISTS users(
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(50) NOT NULL,
+            email VARCHAR (255) UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            age INT NOT NULL,
+            role VARCHAR(20) NOT NULL default 'user',
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+        `
+
+    await sql`
+        --Orders DB schema
+             CREATE TABLE IF NOT EXISTS orders(
+            id SERIAL PRIMARY KEY,
+            customer_iD INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            quantity INT NOT NULL CHECK (quantity>0),
+            food text NOT NULL,
+            price NUMERIC(10,2) NOT NULL,
+            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        )
+        `
+
+    console.log("Database Connected");
+}
+</file>
+
+<file path="src/index.ts">
+import app from "./app"
+import config from "./config";
+import { initDB } from "./db";
+
+const main = async () => {
+    //check database url from congir->env
+    //console.log(config.database_url);
+    initDB();
+    app.listen(config.port, () => {
+
+        console.log(`Server runnig at ${config.port}`);
+    })
+}
+
+main()
+</file>
+
+<file path="src/middleware/globalErrorHandler.ts">
+import type { NextFunction, Request, Response } from "express";
+import config from "../config";
+
+
+export const globalErrorHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => {
+    res.status(500).json({
+        success: false,
+        message: err instanceof Error ? err.message : "Internal Server Error",
+        stack: config.node_env === "Development" && err instanceof Error ? err.stack : undefined
+    });
+};
+</file>
+
+<file path="src/middleware/logger.ts">
+import type { NextFunction, Request, Response } from "express";
+
+export const logger = (req: Request, res: Response, next: NextFunction) => {
+    console.log(`[${new Date().toLocaleString()}], ${req.method}, ${req.url}`);
+    next();
+}
+</file>
+
+<file path="src/types/type.ts">
+export const role = ["user", "admin", "super_admin"] as const
+
+type Role = typeof role[number]
+export type User = {
+    id: number,
+    name: string,
+    email: string,
+    password_hash: string,
+    age: number,
+    role: Role,
+    created_at: Date,
+    updated_at: Date
+}
+
+export type Ruser = Omit<User, "id" | "password_hash" | "created_at" | "updated_at">
+
+
+export type Order = {
+    id: number,
+    customer_id: number,
+    quantity: number,
+    food: string,
+    price: number,
+    created_at: Date,
+    updated_at: Date
+}
+</file>
+
+<file path="src/utils/jwt.ts">
+import config from "../config";
+import type { Ruser } from "../types/type";
+import jwt from "jsonwebtoken"
+export const signToken=(payload: Ruser & {id: number})=>{
+    //accessToken => Data access
+const accessToken=jwt.sign(payload, config.jwt_secrete, {
+    expiresIn: "1d"
+})
+
+    //refreshToken => AccessToken re generate
+    const refreshToken=jwt.sign(payload, config.refresh_secrete, {
+    expiresIn: "7d"
+})
+return {accessToken, refreshToken}
+};
+
+//console.log(signToken({age: 123, email: "hellow@gmail.com", name: "test", role: "admin"}));
+
+
+
+
+export const verifyToken =(token:string, type: "access" | "refresh")=>{
+    const secrete= type ==="access"? config.jwt_secrete:config.refresh_secrete;
+    const decode =jwt.verify(token, secrete);
+    return decode
+}
+</file>
+
+<file path="src/utils/sendResponse.ts">
+import type { Response } from "express";
+
+export function sendResponse<T>(
+    res: Response,
+    { message, data, error }: { message: unknown; data?: T; error?: boolean },
+    status = 200,
+): void {
+    res.status(status).json({
+        success: error ? false : true,
+        message: message,
+        data: error ? undefined : data,
+    })
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "esnext",
+    "types": ["node"],
+    // For nodejs:
+    // "lib": ["esnext"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+  }
+}
+</file>
+
+</files>

@@ -12,4 +12,5 @@ const main = async () => {
     })
 }
 
+app.listen()
 main()

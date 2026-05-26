@@ -1,6 +1,7 @@
 import { sql } from "../../db";
 import type { Ruser, User } from "../../types/type";
 import bcrypt from "bcrypt"
+import cookieParser from "cookie-parser"
 
 class AuthService {
     async createUser(user: Ruser & { password: string }) {
@@ -26,6 +27,14 @@ class AuthService {
         const { password_hash, ...user } = res[0] as User;
         const isValid = await bcrypt.compare(password, password_hash);
         return isValid ? user : null
+    }
+
+    async getUserByID(id: string) {
+        const res = await sql`
+        SELECT id, name, email, age, role FROM users WHERE id = ${id}
+        `
+        return res[0];
+
     }
 
 }
