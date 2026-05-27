@@ -9,12 +9,12 @@ class AuthService {
 
         const hash = await bcrypt.hash(password, 10)
 
-        const res = await sql`
+        const result = await sql`
         INSERT INTO users(name, email, password_hash, age, role)
         VALUES (${name}, ${email}, ${hash}, ${age}, COALESCE(${role},'user' ))
         RETURNING id, name, age, role
         `
-        return res[0]
+        return result[0]
     }
 
     async validateUser(email: string, password: string) {

@@ -3,6 +3,7 @@ import authService from "../servies/auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import { signToken, verifyToken } from "../../utils/jwt";
 import type { JwtPayload } from "jsonwebtoken";
+import type { Ruser } from "../../types/type";
 
 
 export const signup = async (req: Request, res: Response) => {
@@ -43,17 +44,15 @@ export const login = async (req: Request, res: Response) => {
 export const refresh = async (req: Request, res: Response) => {
     //refresh token=> validate=> user info
     const refreshToken = req.cookies?.refreshToken;
-    console.log(`The cookies is: ${req.cookies}`);
-   // const refreshToken = req.cookies?.refreshToken;
-    console.log(refreshToken);
+    // const refreshToken = req.cookies?.refreshToken;
+
     if (!refreshToken) {
 
         return sendResponse(res, { message: "Refresh token not found" }, 401)
-    
-    }
 
+    }
     const payload = verifyToken(refreshToken, "refresh") as JwtPayload;
-    console.log(payload);
+
     if (!payload) {
         return sendResponse(res, { message: "Invalid Token" }, 401)
     }
@@ -62,4 +61,21 @@ export const refresh = async (req: Request, res: Response) => {
 
     const user = await authService.getUserByID(payload.id)
     console.log(user);
+
+    if (!user) {
+        return sendResponse(res, { message: "User Not found" }, 401)
+    }
+    const { accessToken, refreshToken: newRefreshToken } = signToken(user)
+    res.cookie("refreshToken", newRefreshToken, {
+        secure: false,
+        sameSite: "lax",
+        httpOnly: true
+    })
+    sendResponse(res, {
+        message: "Token refreshed ", data: {
+            accessToken,
+            newRefreshToken
+        }
+    })
 }
+

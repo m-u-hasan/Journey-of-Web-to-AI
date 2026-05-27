@@ -1,17 +1,21 @@
-import {Router} from "express"
+import { Router } from "express"
 import { login, refresh, signup } from "../controllers/auth.controller"
+import auth from "../../utils/auth"
 
 
-const router =Router()
+const router = Router()
 
-router.post ("/signup", signup)
-router.post ("/login", login)
+router.post("/signup", signup)
+router.post("/login", login)
 
 router.get("/refresh", refresh)
 
-router.get ("/me", ()=>{})
+router.get("/me", () => { })
 
-router.put ("/update/:id", ()=>{})
-router.delete ("/delete/:id", ()=>{})
+router.get("/test", auth, (req, res) => {
+    res.send("This is super duper sensitive");
+})
+router.put("/update/:id", () => { })
+router.delete("/delete/:id", () => { })
 
 export default router
