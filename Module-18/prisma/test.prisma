@@ -1,0 +1,10 @@
+model User_test {
+  id      Int      @id @default(autoincrement())
+  profile Profile_test?
+}
+
+model Profile_test {
+  id     Int  @id @default(autoincrement())
+  user   User_test @relation(fields: [userId], references: [id])
+  userId Int  @unique // Foreign key with unique constraint
+}
