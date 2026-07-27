@@ -1,13 +1,9 @@
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import bcrypt from "bcrypt";
+import { RegisterUserPayload } from "./user.interface";
 
-interface RegisterUserPayload{
-    name: string;
-    email: string;
-    password: string;
-    profilePhoto?: string;
-}
+
 
 
 
