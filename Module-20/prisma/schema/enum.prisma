@@ -1,9 +1,9 @@
 enum ActiveStatus {
-    ACTIVE
-    BLOCKED
+  ACTIVE
+  BLOCKED
 }
 
 enum Role {
-    USER
-    ADMIN
+  USER
+  ADMIN
 }
