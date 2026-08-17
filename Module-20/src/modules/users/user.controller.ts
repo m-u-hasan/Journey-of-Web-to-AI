@@ -1,38 +1,60 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, RequestHandler, Response } from "express";
 import { prisma } from "../../lib/prisma";
 import config from "../../config";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
 import { userService } from "./user.service";
+import { NetConnectOpts } from "node:net";
+import { catchAsync } from "../../utils/catchAsync";
 
-const registerUser = async (req: Request, res: Response) => {
 
-    try{
-        const payload = req.body;
-    //console.log(payload);
-    const user =await userService.registerUserIntoDB(payload);
+
+
+
+// const registerUser = async (req: Request, res: Response) => {
+
+//     try {
+//         const payload = req.body;
+//         //console.log(payload);
+//         const user = await userService.registerUserIntoDB(payload);
+
+//         res.status(httpStatus.CREATED).json({
+//             success: true,
+//             statusCode: httpStatus.CREATED,
+//             message: "User Registerd succesfully",
+//             data:
+//             {
+//                 user
+//             }
+//         });
+
+//     } catch (error) {
+//         console.log(error);
+
+//         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+//             success: false,
+//             statuscode: httpStatus.INTERNAL_SERVER_ERROR,
+//             message: "Failed to User Registration",
+//             error: (error as Error).message
+//         })
+//     }
+// }
+
+
+const registerUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.body;
+
+    const user = await userService.registerUserIntoDB(payload);
 
     res.status(httpStatus.CREATED).json({
         success: true,
-        statusCode: httpStatus.CREATED,
-        message: "User Registerd succesfully",
-        data:
-        {
+        statuscode: httpStatus.CREATED,
+        message: "User registered successfully",
+        data: {
             user
         }
     });
-
-} catch(error){
-    console.log(error);
-
-    res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        statuscode: httpStatus.INTERNAL_SERVER_ERROR,
-        message: "Failed to User Registration",
-        error: (error as Error).message
-    })
-    }
-}
+})
 export const userController = {
-   registerUser
+    registerUser
 }
