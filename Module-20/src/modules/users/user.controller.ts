@@ -1,4 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from "express";
+import { NextFunction, Request, RequestHandler, response, Response } from "express";
 import { prisma } from "../../lib/prisma";
 import config from "../../config";
 import httpStatus from "http-status";
@@ -6,6 +6,7 @@ import bcrypt from "bcrypt";
 import { userService } from "./user.service";
 import { NetConnectOpts } from "node:net";
 import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
 
 
 
@@ -46,14 +47,21 @@ const registerUser = catchAsync(async (req: Request, res: Response, next: NextFu
 
     const user = await userService.registerUserIntoDB(payload);
 
-    res.status(httpStatus.CREATED).json({
+    // res.status(httpStatus.CREATED).json({
+    //     success: true,
+    //     statuscode: httpStatus.CREATED,
+    //     message: "User registered successfully",
+    //     data: {
+    //         user
+    //     }
+    // });
+
+    sendResponse(res, {
         success: true,
-        statuscode: httpStatus.CREATED,
-        message: "User registered successfully",
-        data: {
-            user
-        }
-    });
+        statusCode: httpStatus.CREATED,
+        message: "User Registered SuccessFully",
+        data: { user }
+    })
 })
 export const userController = {
     registerUser
