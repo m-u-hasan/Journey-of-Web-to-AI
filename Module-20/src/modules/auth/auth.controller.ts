@@ -7,7 +7,25 @@ import httpStatus from "http-status";
 const loginUser =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
 
     const payload =req.body;
+    //destructuring for set cookie
     const {accessToken, refreshToken} =await authService.loginUser(payload);
+
+
+    //cookie option
+res.cookie("accesToken", accessToken,{
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 24*60*60*1000 //24 hr or 1 day in milisecond
+})
+res.cookie("refresToken", refreshToken,{
+    httpOnly: true,
+    secure: false,
+    sameSite: "none",
+    maxAge: 1000*60*60*24*7 // 7 day in milisecond
+})
+
+
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
