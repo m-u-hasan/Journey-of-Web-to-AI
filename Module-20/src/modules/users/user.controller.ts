@@ -7,6 +7,7 @@ import { userService } from "./user.service";
 import { NetConnectOpts } from "node:net";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import jwt from "jsonwebtoken";
 
 
 
@@ -90,7 +91,19 @@ const registerUser = catchAsync(async (req: Request, res: Response, next: NextFu
     })
 })
 
-const getMyProfile =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    // const cookies = req.cookies;
+    // console.log(cookies);
+
+    const { accessToken } = req.cookies;
+    console.log(accessToken);
+
+    const verifiedToken= jwt.verify(accessToken, config.jwt_access_secret);
+    console.log(verifiedToken);
+
+
+    res.send("Get my Profile")
 
 })
 
