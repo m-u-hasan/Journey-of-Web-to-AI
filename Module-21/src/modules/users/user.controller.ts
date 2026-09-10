@@ -1,0 +1,115 @@
+import { NextFunction, Request, RequestHandler, response, Response } from "express";
+import { prisma } from "../../lib/prisma";
+import config from "../../config";
+import httpStatus from "http-status";
+import bcrypt from "bcrypt";
+import { userService } from "./user.service";
+import { NetConnectOpts } from "node:net";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
+import jwt from "jsonwebtoken";
+
+
+
+
+//=================catchAsync.ts===============
+
+// const registerUser = async (req: Request, res: Response) => {
+
+//     try {
+//         const payload = req.body;
+//         //console.log(payload);
+//         const user = await userService.registerUserIntoDB(payload);
+
+//         res.status(httpStatus.CREATED).json({
+//             success: true,
+//             statusCode: httpStatus.CREATED,
+//             message: "User Registerd succesfully",
+//             data:
+//             {
+//                 user
+//             }
+//         });
+
+//     } catch (error) {
+//         console.log(error);
+
+//         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+//             success: false,
+//             statuscode: httpStatus.INTERNAL_SERVER_ERROR,
+//             message: "Failed to User Registration",
+//             error: (error as Error).message
+//         })
+//     }
+// }
+
+
+//=================SendResponse.ts===============
+// type Tmeta = {
+//     page: number;
+//     limit: number;
+//     total: number;
+// }
+
+// type TResponseData<T> = {
+//     success: boolean;
+//     statusCode: number;
+//     message: string;
+//     data: T;
+//     meta?: Tmeta;
+// }
+
+// const sendResponse = <T>(res: Response, data: TResponseData<T>) => {
+//     res.status(data.statusCode).json({
+//         success: data.success,
+//         statusCode: data.statusCode,
+//         message: data.message,
+//         data: data.data,
+//         meta: data.meta
+//     })
+// };
+
+const registerUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.body;
+
+    const user = await userService.registerUserIntoDB(payload);
+
+    // res.status(httpStatus.CREATED).json({
+    //     success: true,
+    //     statuscode: httpStatus.CREATED,
+    //     message: "User registered successfully",
+    //     data: {
+    //         user
+    //     }
+    // });
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "User Registered SuccessFully",
+        data: { user }
+    })
+})
+
+const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    // const cookies = req.cookies;
+    // console.log(cookies);
+
+    const { accessToken } = req.cookies;
+    console.log(accessToken);
+
+    const verifiedToken= jwt.verify(accessToken, config.jwt_access_secret);
+    console.log(verifiedToken);
+
+
+    res.send("Get my Profile")
+
+})
+
+
+
+export const userController = {
+    registerUser,
+    getMyProfile
+}
