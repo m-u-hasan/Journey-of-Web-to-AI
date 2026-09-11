@@ -98,24 +98,24 @@ const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFu
     // const cookies = req.cookies;
     // console.log(cookies);
 
-    const { accessToken } = req.cookies;
-    console.log(accessToken);
+    // const { accessToken } = req.cookies;
+    // console.log(req.user, "User Request success");
 
-    const verifiedToken= jwtUtils.verifyToken(accessToken, config.jwt_access_secret);
-    
-    if (typeof verifiedToken === "string"){ 
-        throw new Error(verifiedToken);
-    }
+    // const verifiedToken= jwtUtils.verifyToken(accessToken, config.jwt_access_secret);
+
+    // if (typeof verifiedToken === "string"){ 
+    //     throw new Error(verifiedToken);
+    // }
 
 
-    const Profile = await userService.getMyProfieFromDB(verifiedToken.id);
+    const Profile = await userService.getMyProfieFromDB(req.user?.id as string);
 
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
         message: "User profile fetched successfully",
-        data: {Profile}
+        data: { Profile }
     })
 
 })
