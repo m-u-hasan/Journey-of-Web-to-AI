@@ -7,3 +7,9 @@ enum Role {
   USER
   ADMIN
 }
+
+enum PostStatus{
+  DRAFT
+  PUBLISHED
+  ARCHIVE
+}
