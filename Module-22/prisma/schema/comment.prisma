@@ -1,0 +1,12 @@
+model Comment {
+    id String @default(uuid())
+    content String @db.text
+
+    authorId String
+    author User @relation(fields: [], references: [], onDelete: Cascade)
+
+
+
+
+postId string
+}

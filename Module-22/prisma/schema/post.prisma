@@ -1,14 +1,14 @@
 model Post{
-    id String #id #default (UUID())
-    title string @db.varchar(255)
-    content string @db text
-    thubnail string?
-    isFeatured Bookean @default(false)
+    id String @default(uuid())
+    title String @db.varchar(255)
+    content String @db.text
+    thubnail String?
+    isFeatured Boolean @default(false)
     status PostStatus @default(PUBLISHED)
     tags String[]
     views Int @default(0)
     createdAt DateTime @default(now())
-    updatedAt DateTime @updateAt
+    updatedAt DateTime @default(now())
 
     @@map("posts")
 }
