@@ -10,5 +10,8 @@ model Post{
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now())
 
+
+    comments Comment[]
+
     @@map("posts")
 }

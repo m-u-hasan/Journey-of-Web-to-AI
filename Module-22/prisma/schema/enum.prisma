@@ -13,3 +13,10 @@ enum PostStatus{
   PUBLISHED
   ARCHIVE
 }
+
+
+enum CommentStatus{
+APPROVED
+REJECT
+
+}

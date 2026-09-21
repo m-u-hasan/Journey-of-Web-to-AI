@@ -1,12 +1,22 @@
 model Comment {
-    id String @default(uuid())
-    content String @db.text
+    id String @id @default(uuid())
+    content String @db.Text
 
     authorId String
-    author User @relation(fields: [], references: [], onDelete: Cascade)
+    author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
 
 
 
-postId string
+postId String
+Post Post @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+
+status CommentStatus @default(APPROVED)
+
+createdAt DateTime @default(now())
+updatedAt DateTime @default(now())
+@@index([postId])
+@@index([authorId])
+@@map("comments")
 }
