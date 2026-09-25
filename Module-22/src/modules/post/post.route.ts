@@ -6,38 +6,41 @@ import { postController } from "./post.controller";
 const router = Router();
 
 router.post("/",
-    auth(Role.USER, Role.ADMIN, Role.AUTHOR),
+    auth(Role.USER, Role.ADMIN),
     postController.createPost);
 
-router.get("/stats",
-    postController.getPostsStats
+// router.get("/stats",
+//     postController.getPostsStats
 
-);
-router.get("/", postController.getAllPosts);
+// );
+// router.get("/", postController.getAllPosts);
 
 
 
-router.get("/my-posts",
+// router.get("/my-posts",
 
-    postController.getMyPosts
+//     postController.getMyPosts
 
-)
+// )
 
-router.get("/:postId",
+// router.get("/:postId",
 
-    postController.getPostById
+//     postController.getPostById
 
-)
+// )
 
-router.patch(":/postId",
-    auth(Role.USER, Role.ADMIN, Role.AUTHOR),
+// router.patch(":/postId",
+//     auth(Role.USER, Role.ADMIN),
 
-    postController.updatePost
+//     postController.updatePost
 
-)
+// )
 
-router.delete("/:postId",
-    auth(Role.USER, Role.ADMIN, Role.AUTHOR),
-    postController.deletePost
+// router.delete("/:postId",
+//     auth(Role.USER, Role.ADMIN),
+//     postController.deletePost
 
-)
+// )
+
+
+export const postRoutes = router;

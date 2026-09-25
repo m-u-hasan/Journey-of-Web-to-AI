@@ -2,7 +2,7 @@ model Post {
     id         String     @id @default(uuid())
     title      String     @db.VarChar(255)
     content    String     @db.Text
-    thubnail   String?
+    thumbnail  String?    @db.Text
     isFeatured Boolean    @default(false)
     status     PostStatus @default(PUBLISHED)
     tags       String[]
@@ -14,7 +14,7 @@ model Post {
     author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
     comments Comment[]
-    
+
     @@index([authorId])
     @@map("posts")
 }
