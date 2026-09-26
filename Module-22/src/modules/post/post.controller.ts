@@ -24,7 +24,14 @@ const createPost =catchAsync(async(req: Request, res: Response, next: NextFuncti
 
 
 const getAllPosts =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+    const result = await postService.getAllPosts();
 
+    sendResponse(res, {
+        success: true,
+        statusCode: httpSatus.OK,
+        message: "Get all post successfully",
+        data: result
+    })
 })
 
 const getPostById =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{

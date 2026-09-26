@@ -13,7 +13,7 @@ router.post("/",
 //     postController.getPostsStats
 
 // );
-// router.get("/", postController.getAllPosts);
+router.get("/", postController.getAllPosts);
 
 
 
