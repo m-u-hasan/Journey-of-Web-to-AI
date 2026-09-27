@@ -50,7 +50,7 @@ const updatePost = await prisma.post.update({
     include: {
         author: {
             omit: {
-                password: turue
+                password: true
             }
         },
         comments: true

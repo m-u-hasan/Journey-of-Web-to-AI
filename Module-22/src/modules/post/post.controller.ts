@@ -42,7 +42,12 @@ const getPostById =catchAsync(async(req: Request, res: Response, next: NextFunct
     }
     const result = await postService.getPostById(postId as string)
 
-    
+    sendResponse (res, {
+        success: true,
+        statusCode: httpSatus.OK,
+        message: "Post rettrived success",
+        data: result
+    })
 })
 
 const updatePost=catchAsync(async(req: Request, res: Response, next: NextFunction)=>{

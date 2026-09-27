@@ -23,11 +23,11 @@ router.get("/", postController.getAllPosts);
 
 // )
 
-// router.get("/:postId",
+router.get("/:postId",
 
-//     postController.getPostById
+postController.getPostById
 
-// )
+)
 
 // router.patch(":/postId",
 //     auth(Role.USER, Role.ADMIN),
