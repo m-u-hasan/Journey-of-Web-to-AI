@@ -3,6 +3,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { postService } from "./post.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpSatus from "http-status"
+import { error } from "node:console";
 
 
 const createPost =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
@@ -35,7 +36,13 @@ const getAllPosts =catchAsync(async(req: Request, res: Response, next: NextFunct
 })
 
 const getPostById =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+    const postId= req.params.postId;
+    if(!postId){
+        throw new Error ("Post ")
+    }
+    const result = await postService.getPostById(postId as string)
 
+    
 })
 
 const updatePost=catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
