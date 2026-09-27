@@ -17,11 +17,11 @@ router.get("/", postController.getAllPosts);
 
 
 
-// router.get("/my-posts",
+router.get("/my-posts",
+    auth(Role.USER, Role.ADMIN, Role.AUTHOR),
+postController.getMyPosts
 
-//     postController.getMyPosts
-
-// )
+)
 
 router.get("/:postId",
 

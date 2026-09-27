@@ -4,6 +4,7 @@ import { postService } from "./post.service";
 import { sendResponse } from "../../utils/sendResponse";
 import httpSatus from "http-status"
 import { error } from "node:console";
+import { send } from "node:process";
 
 
 const createPost =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
@@ -65,7 +66,16 @@ const getPostsStats= catchAsync(async(req: Request, res: Response, next: NextFun
 
 const getMyPosts= catchAsync(async(req: Request, res: Response, next: NextFunction)=>
 {
+    const authorId= req.user?.id;
 
+    const result=await postService.getMyPosts(authorId as string);
+
+    sendResponse(res,{
+        success: true,
+        statusCode: httpSatus.OK,
+        message:"myPosts retrived successfully",
+        data: result
+    })
 })
 
 export const postController={
