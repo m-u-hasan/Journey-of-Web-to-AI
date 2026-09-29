@@ -14,7 +14,6 @@ export const catchAsync = (fn: RequestHandler) => {
                 message: "Failed to User Registration",
                 error: (error as Error).message
             })
-
         }
     }
 }

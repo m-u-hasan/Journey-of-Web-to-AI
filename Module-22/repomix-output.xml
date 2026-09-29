@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src/modules/post/post.route.ts, src/modules/auth/auth.routes.ts, src/app.ts, src/middleware/auth.ts, prisma/schema/post.prisma, generated/prisma/models/Post.ts, prisma/migrations/20260925164622_post_comment_model/migration.sql, prisma/schema/profile.prisma, prisma/schema/comment.prisma, prisma/schema/enum.prisma, src/modules/comment/comment.service.ts, src/modules/auth/auth.interface.ts, src/modules/auth/auth.controller.ts, src/config/index.ts, src/lib/prisma.ts, src/modules/post/post.controller.ts, src/modules/auth/auth.service.ts, src/modules/post/post.service.ts, src/modules/users/user.service.ts, src/modules/post/post.interface.ts, prisma/schema/schema.prisma, prisma/schema/user.prisma, src/server.ts, src/app.ts
+- Only files matching these patterns are included: src/modules/post/post.route.ts, src/modules/auth/auth.routes.ts, src/app.ts, src/middleware/auth.ts, prisma/schema/post.prisma, generated/prisma/models/Post.ts, prisma/migrations/20260925164622_post_comment_model/migration.sql, prisma/schema/profile.prisma, prisma/schema/comment.prisma, prisma/schema/enum.prisma, src/modules/comment/comment.service.ts, src/modules/auth/auth.interface.ts, src/modules/auth/auth.controller.ts, src/config/index.ts, src/lib/prisma.ts, src/modules/post/post.controller.ts, src/utils/catchAsync.ts, src/modules/auth/auth.service.ts, src/modules/post/post.service.ts, src/modules/users/user.service.ts, src/modules/post/post.interface.ts, prisma/schema/schema.prisma, prisma/schema/user.prisma, src/server.ts, src/app.ts
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -74,6 +74,8 @@ src/
       post.service.ts
     users/
       user.service.ts
+  utils/
+    catchAsync.ts
   app.ts
   server.ts
 </directory_structure>
@@ -576,7 +578,19 @@ const getPostById =catchAsync(async(req: Request, res: Response, next: NextFunct
 })
 
 const updatePost=catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+    const authorId = req.user?.id;
+    const isAdmin = req.user?.role==="ADMIN";
 
+    const postId =req.params.postId;
+    const payload = req.body;
+
+    const result= await postService.updatePost(postId as string, payload, authorId as string, isAdmin)
+    sendResponse (res, {
+        success: true,
+        statusCode: httpSatus.OK,
+        message: "Post updated successfully",
+        data: result
+    })
 })
 
 
@@ -624,6 +638,17 @@ export interface ICreatePostPayload {
     status?: PostStatus,
     tags: string[]
 }
+
+
+
+export interface IUpdatePostPayload{
+      title?: string,
+    content?: string,
+    thumbnail?: string,
+    //isFeatured?: boolean,
+    status?: PostStatus,
+    tags: string[]
+}
 </file>
 
 <file path="src/modules/post/post.route.ts">
@@ -655,12 +680,12 @@ router.get("/:postId",
 postController.getPostById
 )
 
-// router.patch(":/postId",
-//     auth(Role.USER, Role.ADMIN),
+router.patch(":/postId",
+    auth(Role.USER, Role.ADMIN, Role.AUTHOR),
 
-//     postController.updatePost
+    postController.updatePost
 
-// )
+)
 
 // router.delete("/:postId",
 //     auth(Role.USER, Role.ADMIN),
@@ -674,7 +699,7 @@ export const postRoutes = router;
 
 <file path="src/modules/post/post.service.ts">
 import { prisma } from "../../lib/prisma"
-import { ICreatePostPayload } from "./post.interface"
+import { ICreatePostPayload, IUpdatePostPayload } from "./post.interface"
 
 const createPost = async (payload: ICreatePostPayload, userId: string) => {
     const result = await prisma.post.create(
@@ -733,16 +758,6 @@ const updatePost = await prisma.post.update({
 })
 return updatePost
 }
-
-
-const deletePost = () => {
-
-}
-
-const getPostsStats = () => {
-
-}
-
 const getMyPosts = async(authorId: string) => {
     const result = await prisma.post.findMany({
         where: {
@@ -772,13 +787,56 @@ const getMyPosts = async(authorId: string) => {
 return result;
 }
 
+const updatePost=async(postId: string, payload: IUpdatePostPayload, authorId: string, isAdmin: boolean)=>{
+
+    const post = await prisma.post.findFirstOrThrow({
+        where: {
+            id: postId
+        }
+    })
+    if(!isAdmin && post.authorId !== authorId ){
+        throw new Error ("You are not the owner of this post!")
+    }
+
+    const result= await prisma.post.update({
+        where: {
+            id: postId
+        },
+        data: payload,
+         include: {
+            
+            author: {
+                omit:{
+                    password: true,
+                }
+                
+        },
+        comments: true,
+    }
+})
+    return result;
+}
+
+
+
+const deletePost = () => {
+
+}
+
+const getPostsStats = () => {
+
+}
+
+
+
 export const postService = {
 
     createPost,
 
     getAllPosts,
     getPostById,
-     getMyPosts 
+     getMyPosts ,
+     updatePost
 
 }
 </file>
@@ -884,6 +942,28 @@ export const userService = {
     registerUserIntoDB,
     getMyProfieFromDB,
     updateMyProfileInDB
+}
+</file>
+
+<file path="src/utils/catchAsync.ts">
+import { NextFunction, Request, RequestHandler, Response } from "express";
+import HttpStatus from "http-status";
+
+export const catchAsync = (fn: RequestHandler) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            await fn(req, res, next);
+        } catch (error) {
+            console.log(error);
+
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+                success: false,
+                statuscode: HttpStatus.INTERNAL_SERVER_ERROR,
+                message: "Failed to User Registration",
+                error: (error as Error).message
+            })
+        }
+    }
 }
 </file>
 
