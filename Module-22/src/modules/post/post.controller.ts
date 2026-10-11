@@ -7,7 +7,7 @@ import { error } from "node:console";
 import { send } from "node:process";
 
 
-const createPost =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+const createPost = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = req.user?.id;
 
     const payload = req.body;
@@ -25,7 +25,7 @@ const createPost =catchAsync(async(req: Request, res: Response, next: NextFuncti
 })
 
 
-const getAllPosts =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+const getAllPosts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const result = await postService.getAllPosts();
 
     sendResponse(res, {
@@ -36,14 +36,14 @@ const getAllPosts =catchAsync(async(req: Request, res: Response, next: NextFunct
     })
 })
 
-const getPostById =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
-    const postId= req.params.postId;
-    if(!postId){
-        throw new Error ("Post ")
+const getPostById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const postId = req.params.postId;
+    if (!postId) {
+        throw new Error("Post ID Required in params")
     }
     const result = await postService.getPostById(postId as string)
 
-    sendResponse (res, {
+    sendResponse(res, {
         success: true,
         statusCode: httpSatus.OK,
         message: "Post rettrived success",
@@ -51,15 +51,18 @@ const getPostById =catchAsync(async(req: Request, res: Response, next: NextFunct
     })
 })
 
-const updatePost=catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+const updatePost = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const authorId = req.user?.id;
-    const isAdmin = req.user?.role==="ADMIN";
+    const isAdmin = req.user?.role === "ADMIN";
 
-    const postId =req.params.postId;
+    const postId = req.params.postId;
+    if (!postId) {
+        throw new Error("Post ID Required in params")
+    }
     const payload = req.body;
 
-    const result= await postService.updatePost(postId as string, payload, authorId as string, isAdmin)
-    sendResponse (res, {
+    const result = await postService.updatePost(postId as string, payload, authorId as string, isAdmin)
+    sendResponse(res, {
         success: true,
         statusCode: httpSatus.OK,
         message: "Post updated successfully",
@@ -68,29 +71,43 @@ const updatePost=catchAsync(async(req: Request, res: Response, next: NextFunctio
 })
 
 
-const deletePost=catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+const deletePost = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const authorId = req.user?.id;
+    const isAdmin = req.user?.role === "ADMIN";
 
-})
+    const postId = req.params.postId;
+    if (!postId) {
+        throw new Error("Post ID Required in params")
+    }
+    const payload = req.body;
 
-const getPostsStats= catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
-
-})
-
-const getMyPosts= catchAsync(async(req: Request, res: Response, next: NextFunction)=>
-{
-    const authorId= req.user?.id;
-
-    const result=await postService.getMyPosts(authorId as string);
-
-    sendResponse(res,{
+    const result = await postService.deletePost(postId as string, authorId as string, isAdmin)
+    sendResponse(res, {
         success: true,
         statusCode: httpSatus.OK,
-        message:"myPosts retrived successfully",
+        message: "Post Deleted successfully",
+        data: null
+    })
+})
+
+const getPostsStats = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+})
+
+const getMyPosts = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const authorId = req.user?.id;
+
+    const result = await postService.getMyPosts(authorId as string);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpSatus.OK,
+        message: "myPosts retrived successfully",
         data: result
     })
 })
 
-export const postController={
+export const postController = {
     createPost,
     getAllPosts,
     getPostById,
