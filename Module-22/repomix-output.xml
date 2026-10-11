@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: src/modules/post/post.route.ts, src/modules/auth/auth.routes.ts, src/app.ts, src/middleware/auth.ts, prisma/schema/post.prisma, generated/prisma/models/Post.ts, prisma/migrations/20260925164622_post_comment_model/migration.sql, prisma/schema/profile.prisma, prisma/schema/comment.prisma, prisma/schema/enum.prisma, src/modules/comment/comment.service.ts, src/modules/auth/auth.interface.ts, src/modules/auth/auth.controller.ts, src/config/index.ts, src/lib/prisma.ts, src/modules/post/post.controller.ts, src/utils/catchAsync.ts, src/modules/auth/auth.service.ts, src/modules/post/post.service.ts, src/modules/users/user.service.ts, src/modules/post/post.interface.ts, prisma/schema/schema.prisma, prisma/schema/user.prisma, src/server.ts, src/app.ts
+- Only files matching these patterns are included: src/modules/post/post.route.ts, src/modules/auth/auth.routes.ts, src/app.ts, src/middleware/auth.ts, prisma/schema/post.prisma, generated/prisma/models/Post.ts, prisma/migrations/20260925164622_post_comment_model/migration.sql, prisma/schema/profile.prisma, prisma/schema/comment.prisma, prisma/schema/enum.prisma, src/modules/comment/comment.service.ts, src/modules/auth/auth.interface.ts, src/modules/auth/auth.controller.ts, src/config/index.ts, src/lib/prisma.ts, src/modules/post/post.controller.ts, src/utils/catchAsync.ts, src/modules/auth/auth.service.ts, src/modules/post/post.service.ts, repomix-output.xml, src/modules/users/user.controller.ts, src/modules/comment/comment.controller.ts, src/modules/users/user.interface.ts, src/modules/users/user.service.ts, src/modules/post/post.interface.ts, prisma/schema/schema.prisma, prisma/schema/user.prisma, src/server.ts, src/app.ts
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -66,6 +66,7 @@ src/
       auth.routes.ts
       auth.service.ts
     comment/
+      comment.controller.ts
       comment.service.ts
     post/
       post.controller.ts
@@ -73,6 +74,8 @@ src/
       post.route.ts
       post.service.ts
     users/
+      user.controller.ts
+      user.interface.ts
       user.service.ts
   utils/
     catchAsync.ts
@@ -519,6 +522,110 @@ export const authService = {
 }
 </file>
 
+<file path="src/modules/comment/comment.controller.ts">
+import { NextFunction, Request, Response } from "express";
+import { catchAsync } from "../../utils/catchAsync";
+import { postService } from "./post.service";
+import { sendResponse } from "../../utils/sendResponse";
+import httpSatus from "http-status"
+import { error } from "node:console";
+import { send } from "node:process";
+
+
+const createPost =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+    const id = req.user?.id;
+
+    const payload = req.body;
+
+    const result = await postService.createPost(payload, id as string);
+
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpSatus.CREATED,
+        message: "Post Created Successfully",
+        data: result
+    })
+
+})
+
+
+const getAllPosts =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+    const result = await postService.getAllPosts();
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpSatus.OK,
+        message: "Get all post successfully",
+        data: result
+    })
+})
+
+const getPostById =catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+    const postId= req.params.postId;
+    if(!postId){
+        throw new Error ("Post ")
+    }
+    const result = await postService.getPostById(postId as string)
+
+    sendResponse (res, {
+        success: true,
+        statusCode: httpSatus.OK,
+        message: "Post rettrived success",
+        data: result
+    })
+})
+
+const updatePost=catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+    const authorId = req.user?.id;
+    const isAdmin = req.user?.role==="ADMIN";
+
+    const postId =req.params.postId;
+    const payload = req.body;
+
+    const result= await postService.updatePost(postId as string, payload, authorId as string, isAdmin)
+    sendResponse (res, {
+        success: true,
+        statusCode: httpSatus.OK,
+        message: "Post updated successfully",
+        data: result
+    })
+})
+
+
+const deletePost=catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+
+})
+
+const getPostsStats= catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+
+})
+
+const getMyPosts= catchAsync(async(req: Request, res: Response, next: NextFunction)=>
+{
+    const authorId= req.user?.id;
+
+    const result=await postService.getMyPosts(authorId as string);
+
+    sendResponse(res,{
+        success: true,
+        statusCode: httpSatus.OK,
+        message:"myPosts retrived successfully",
+        data: result
+    })
+})
+
+export const postController={
+    createPost,
+    getAllPosts,
+    getPostById,
+    updatePost,
+    deletePost,
+    getPostsStats,
+    getMyPosts
+}
+</file>
+
 <file path="src/modules/comment/comment.service.ts">
 
 </file>
@@ -838,6 +945,166 @@ export const postService = {
      getMyPosts ,
      updatePost
 
+}
+</file>
+
+<file path="src/modules/users/user.controller.ts">
+import { NextFunction, Request, RequestHandler, response, Response } from "express";
+import { prisma } from "../../lib/prisma";
+import config from "../../config";
+import httpStatus from "http-status";
+import bcrypt from "bcrypt";
+import { userService } from "./user.service";
+import { NetConnectOpts } from "node:net";
+import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
+import jwt from "jsonwebtoken";
+import { jwtUtils } from "../../utils/jwt";
+import { error, profile } from "node:console";
+import { asyncWrapProviders } from "node:async_hooks";
+
+
+
+
+//=================catchAsync.ts===============
+
+// const registerUser = async (req: Request, res: Response) => {
+
+//     try {
+//         const payload = req.body;
+//         //console.log(payload);
+//         const user = await userService.registerUserIntoDB(payload);
+
+//         res.status(httpStatus.CREATED).json({
+//             success: true,
+//             statusCode: httpStatus.CREATED,
+//             message: "User Registerd succesfully",
+//             data:
+//             {
+//                 user
+//             }
+//         });
+
+//     } catch (error) {
+//         console.log(error);
+
+//         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+//             success: false,
+//             statuscode: httpStatus.INTERNAL_SERVER_ERROR,
+//             message: "Failed to User Registration",
+//             error: (error as Error).message
+//         })
+//     }
+// }
+
+
+//=================SendResponse.ts===============
+// type Tmeta = {
+//     page: number;
+//     limit: number;
+//     total: number;
+// }
+
+// type TResponseData<T> = {
+//     success: boolean;
+//     statusCode: number;
+//     message: string;
+//     data: T;
+//     meta?: Tmeta;
+// }
+
+// const sendResponse = <T>(res: Response, data: TResponseData<T>) => {
+//     res.status(data.statusCode).json({
+//         success: data.success,
+//         statusCode: data.statusCode,
+//         message: data.message,
+//         data: data.data,
+//         meta: data.meta
+//     })
+// };
+
+const registerUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.body;
+
+    const user = await userService.registerUserIntoDB(payload);
+
+    // res.status(httpStatus.CREATED).json({
+    //     success: true,
+    //     statuscode: httpStatus.CREATED,
+    //     message: "User registered successfully",
+    //     data: {
+    //         user
+    //     }
+    // });
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.CREATED,
+        message: "User Registered SuccessFully",
+        data: { user }
+    })
+})
+
+const getMyProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    // const cookies = req.cookies;
+    // console.log(cookies);
+
+    // const { accessToken } = req.cookies;
+    // console.log(req.user, "User Request success");
+
+    // const verifiedToken= jwtUtils.verifyToken(accessToken, config.jwt_access_secret);
+
+    // if (typeof verifiedToken === "string"){ 
+    //     throw new Error(verifiedToken);
+    // }
+
+
+    const Profile = await userService.getMyProfieFromDB(req.user?.id as string);
+
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: "User profile fetched successfully",
+        data: { Profile }
+    })
+
+})
+
+const updateMyProfile = catchAsync(async(req: Request, res: Response, next: NextFunction)=>{
+
+const userId = req.user?.id as string;
+
+const payload = req.body;
+const updatedProfile = await userService.updateMyProfileInDB(userId, payload);
+
+
+sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User Profile updated successfully",
+    data: {
+        updatedProfile
+    }
+})
+
+
+})
+
+export const userController = {
+    registerUser,
+    getMyProfile,
+    updateMyProfile
+}
+</file>
+
+<file path="src/modules/users/user.interface.ts">
+export interface RegisterUserPayload{
+    name: string;
+    email: string;
+    password: string;
+    profilePhoto?: string;
 }
 </file>
 
