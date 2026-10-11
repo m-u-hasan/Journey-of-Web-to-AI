@@ -43,106 +43,106 @@ const getPostById = async (postId: string) => {
         }
     })
 
-const post = await prisma.post.findUniqueOrThrow({
-    where: {
-        id: postId,
-    },
-   
-    include: {
-        author: {
-            omit: {
-                password: true
-            }
+    const post = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId,
         },
-        comments:{
-            where: {
-                status: CommentStatus.APPROVED
+
+        include: {
+            author: {
+                omit: {
+                    password: true
+                }
             },
-            orderBy: {
-                createdAt: "desc"
-            }
-        }, 
-        _count: {
-            select:{
-                comments: true
+            comments: {
+                where: {
+                    status: CommentStatus.APPROVED
+                },
+                orderBy: {
+                    createdAt: "desc"
+                }
+            },
+            _count: {
+                select: {
+                    comments: true
+                }
             }
         }
-    }
-})
-return post
+    })
+    return post
 }
+//22-7 Getting Started With Transaction And Rollback
 
 
-
-const getMyPosts = async(authorId: string) => {
+const getMyPosts = async (authorId: string) => {
     const result = await prisma.post.findMany({
         where: {
             authorId
         },
-        orderBy:{
+        orderBy: {
             createdAt: "desc"
         },
         include: {
             comments: true,
             author: {
-                omit:{
+                omit: {
                     password: true,
                 }
-                
-        },
-        _count:{
-            select:{
-                comments: true
-                
+
+            },
+            _count: {
+                select: {
+                    comments: true
+
+                }
             }
         }
-        }
 
 
-});
-return result;
+    });
+    return result;
 }
 
-const updatePost=async(postId: string, payload: IUpdatePostPayload, authorId: string, isAdmin: boolean)=>{
+const updatePost = async (postId: string, payload: IUpdatePostPayload, authorId: string, isAdmin: boolean) => {
 
     const post = await prisma.post.findFirstOrThrow({
         where: {
             id: postId
         }
     })
-    if(!isAdmin && post.authorId !== authorId ){
-        throw new Error ("You are not the owner of this post!")
+    if (!isAdmin && post.authorId !== authorId) {
+        throw new Error("You are not the owner of this post!")
     }
 
-    const result= await prisma.post.update({
+    const result = await prisma.post.update({
         where: {
             id: postId
         },
         data: payload,
-         include: {
-            
+        include: {
+
             author: {
-                omit:{
+                omit: {
                     password: true,
                 }
-                
-        },
-        comments: true,
-    }
-})
+
+            },
+            comments: true,
+        }
+    })
     return result;
 }
 
 
 
-const deletePost = async(postId: string, authorId: string, isAdmin: boolean) => {
+const deletePost = async (postId: string, authorId: string, isAdmin: boolean) => {
     const post = await prisma.post.findFirstOrThrow({
         where: {
             id: postId
         }
     })
-       if(!isAdmin && post.authorId !== authorId ){
-        throw new Error ("You are not the owner of this post!")
+    if (!isAdmin && post.authorId !== authorId) {
+        throw new Error("You are not the owner of this post!")
     }
 
     await prisma.post.delete({
@@ -151,7 +151,7 @@ const deletePost = async(postId: string, authorId: string, isAdmin: boolean) => 
         }
     })
 
- 
+
 }
 
 const getPostsStats = () => {
@@ -166,8 +166,8 @@ export const postService = {
 
     getAllPosts,
     getPostById,
-     getMyPosts ,
-     updatePost,
-     deletePost
+    getMyPosts,
+    updatePost,
+    deletePost
 
 }
